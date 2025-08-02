@@ -10,7 +10,7 @@ This repository maintains organized documentation for various technologies, focu
 
 The repository is organized by technology stack:
 
-- **`react/`** - React ecosystem documentation
+- **`cpp/`** - Data structures and algorithm documentation in C++
 - **`dotnet/`** - .NET framework and related tools  
 
 Each technology folder contains specific tools, versions, and implementation guides.
