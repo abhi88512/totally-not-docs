@@ -111,6 +111,22 @@ CQRS (Command Query Responsibility Segregation) aligns well with Clean Architect
       * The results are typically returned as `DTOs` to the `Controller` for presentation, without involving the complex domain logic of the Entities.
       * This direct read path avoids the overhead of the full domain model, while still adhering to The Dependency Rule as queries flow from outer layers to outer data layers.
 
+### CQRS with React Client and .NET Web API Example
+
+Here's how typical components in a React client and .NET Web API stack, applying CQRS, fit into Clean Architecture:
+
+  * **React Client**: This forms the primary **Frameworks and Drivers** layer on the client-side. It's the outermost detail, handling UI presentation and user interaction. It dispatches commands (via HTTP requests) and fetches data (via HTTP requests for queries) from the API.
+  * **API (ASP.NET Core Web API)**: The Web API itself, including its framework-specific controllers, belongs to the **Frameworks and Drivers** layer on the server-side. Its controllers act as the primary entry point, receiving HTTP requests and translating them.
+      * **API Controllers (within Web API)**: Reside conceptually in the **Interface Adapters** layer. They receive HTTP requests (Commands or Queries) and adapt them into suitable inputs for the Application Layer (Use Cases or Query Services). They also adapt outputs from the Application Layer back into HTTP responses (often using DTOs).
+  * **Application Layer (e.g., .NET Application Services)**: This maps directly to the **Use Cases** layer. It contains the application-specific business logic and orchestrates domain entities and persistence operations.
+      * **Command Handlers**: Within the Application Layer, these receive commands (e.g., `CreateOrderCommand`) from the API controllers. They encapsulate the specific business rules for that command, interact with the Domain Layer, and use Persistence Layer interfaces to save changes.
+      * **Query Handlers**: Also within the Application Layer, these receive queries (e.g., `GetProductByIdQuery`). For complex queries, they might orchestrate domain logic; for read-optimized queries (common in CQRS), they might directly interact with read-specific interfaces from the Persistence Layer.
+  * **Domain Layer (e.g., .NET Domain Models, Entities, Value Objects)**: This maps directly to the **Entities** layer (innermost circle). It contains the core enterprise-wide business rules, entities, and value objects that are completely independent of any frameworks or external concerns. The Application Layer operates on these domain objects.
+  * **Persistence Layer (e.g., Entity Framework Core, Dapper implementations)**: This layer's concrete implementations reside in the **Frameworks and Drivers** layer. This is where actual database interactions occur (e.g., SQL queries, ORM mapping).
+      * **Persistence Interfaces**: Interfaces like `IRepository<T>` (for write models) or `IReadModelRepository<T>` (for read models) are defined in the **Domain Layer** or **Application Layer** (closer to the core), following the Dependency Inversion Principle. The concrete `DbContext` or Dapper implementations in the Persistence Layer implement these interfaces. This allows the inner layers to remain unaware of the database technology.
+
+This layered structure ensures that the core business logic in the Domain and Application layers remains clean, testable, and independent of UI (React Client), API framework (.NET Web API), and database details.
+
 -----
 
 **Original Source:** [The Clean Code Blog - The Clean Architecture](https://www.google.com/search?q=http://blog.cleancoder.com/2012/08/13/the-clean-architecture.html)
