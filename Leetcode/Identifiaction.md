@@ -9,4 +9,6 @@
 
 * **Heap Patterns**:
     * **Two Keypoints**: Problems involve K and finding the Smallest or Largest elements.
+    * **Which Heap min or max?**: For "K smallest" elements, use a max-heap; for "K largest" elements, use a min-heap.
+
 
