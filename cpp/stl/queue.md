@@ -1,389 +1,238 @@
+# C++ Queue (std::queue) Documentation
 
------
+**First In, First Out (FIFO)**
 
-````markdown
-# C++ Priority Queue (std::priority_queue) Documentation
+> A container adapter that provides queue functionality - elements are inserted at the back and removed from the front.
 
-**Highest Priority First (Max-Heap by default)**
-
-> A container adapter that provides priority queue functionality - elements are ordered by priority, with the highest priority element always accessible at the top. It uses a heap data structure internally to maintain this order.
+## 📋 Table of Contents
+- [Declaration & Initialization](#declaration--initialization)
+- [Core Operations](#core-operations)
+- [Basic Usage Example](#basic-usage-example)
+- [Iteration Patterns](#iteration-patterns)
+- [Common Use Cases](#common-use-cases)
+- [Performance Characteristics](#performance-characteristics)
+- [Error Handling](#error-handling)
+- [Best Practices](#best-practices)
 
 ## Declaration & Initialization
 ```cpp
-#include <queue>    // Required for std::priority_queue
-#include <vector>   // Default underlying container for std::priority_queue
-#include <functional> // Required for std::greater, std::less (for custom comparators)
+#include <queue>
+#include <list>   // Can be used as an underlying container
+#include <deque>  // Default underlying container
 
-// Basic declaration (max-heap by default - largest element has highest priority)
-std::priority_queue<int> pq_max;
+// Basic declaration
+std::queue<int> q;
 
-// Min-heap declaration (smallest element has highest priority)
-// Syntax: priority_queue<Type, Container, Comparator>
-std::priority_queue<int, std::vector<int>, std::greater<int>> pq_min;
+// With specific underlying container
+std::queue<int, std::list<int>> q_list; // Using list as underlying container
 
-// With custom types and custom comparator struct
-struct Task {
-    std::string name;
-    int priority; // Higher value means higher priority
-};
-
-// Custom comparator for max-heap (Task with highest priority value is top)
-struct CompareTasks {
-    bool operator()(const Task& a, const Task& b) {
-        return a.priority < b.priority; // 'a' has lower priority than 'b' if true (for max-heap)
-    }
-};
-std::priority_queue<Task, std::vector<Task>, CompareTasks> task_pq;
-
-// Initialize with elements from another container (C++11 onwards)
-std::vector<int> v = {30, 10, 50, 20};
-std::priority_queue<int> pq_init(v.begin(), v.end()); // pq_init contains {50, 30, 20, 10}
-````
+// Template with custom types
+std::queue<std::string> str_queue;
+std::queue<std::pair<int, std::string>> pair_queue;
+```
 
 ## Core Operations
 
 | Operation | Syntax | Description | Time Complexity |
 |-----------|--------|-------------|-----------------|
-| **Push** | `pq.push(value)` | Add element to the queue (maintains heap property) | O($\\log N$) |
-| **Pop** | `pq.pop()` | Remove the top (highest priority) element | O($\\log N$) |
-| **Top** | `pq.top()` | Access the top (highest priority) element | O(1) |
-| **Size** | `pq.size()` | Get number of elements | O(1) |
-| **Empty** | `pq.empty()` | Check if queue is empty | O(1) |
+| **Push** | `q.push(value)` | Add element to back | O(1) |
+| **Pop** | `q.pop()` | Remove front element | O(1) |
+| **Front** | `q.front()` | Access front element | O(1) |
+| **Back** | `q.back()` | Access back element | O(1) |
+| **Size** | `q.size()` | Get number of elements | O(1) |
+| **Empty** | `q.empty()` | Check if queue is empty | O(1) |
 
 ### Detailed Operation Examples
-
 ```cpp
-#include <iostream>
-#include <queue>
-#include <vector>
-#include <functional> // For std::greater
+std::queue<int> q;
 
-void demonstratePriorityQueueOps() {
-    std::priority_queue<int> pq; // Default max-heap
+// Push operations
+q.push(10);                          // Queue: [10]
+q.push(20);                          // Queue: [10, 20]
+q.push(30);                          // Queue: [10, 20, 30]
 
-    // Push operations
-    pq.push(10); // PQ: [10]
-    pq.push(30); // PQ: [30, 10] (log N cost)
-    pq.push(20); // PQ: [30, 10, 20] (log N cost)
-    pq.push(50); // PQ: [50, 30, 20, 10] (log N cost)
+// Access operations
+int front_element = q.front();         // front_element = 10
+int back_element = q.back();           // back_element = 30
+size_t queue_size = q.size();          // queue_size = 3
+bool is_empty = q.empty();             // is_empty = false
 
-    // Access operations
-    int top_element = pq.top(); // top_element = 50 (O(1) cost)
-    size_t pq_size = pq.size(); // pq_size = 4
-    bool is_empty = pq.empty(); // is_empty = false
-
-    std::cout << "Top element: " << top_element << "\n";
-    std::cout << "Priority Queue size: " << pq_size << ", Is empty: " << is_empty << "\n";
-
-    // Pop operations (removes 50)
-    pq.pop(); // PQ: [30, 20, 10] (log N cost)
-    std::cout << "Top after pop: " << pq.top() << "\n"; // 30
-    
-    // Demonstrate min-heap
-    std::priority_queue<int, std::vector<int>, std::greater<int>> min_pq;
-    min_pq.push(10); min_pq.push(30); min_pq.push(20);
-    std::cout << "Min-heap top: " << min_pq.top() << "\n"; // 10
-}
-
-int main() {
-    demonstratePriorityQueueOps();
-    return 0;
-}
+// Pop operations
+q.pop();                               // Queue: [20, 30]
+std::cout << "Front after pop: " << q.front() << std::endl; // 20
 ```
 
 ## Basic Usage Example
-
 ```cpp
 #include <iostream>
 #include <queue>
-#include <vector>
-#include <functional> // For std::greater
-using namespace std; // Using namespace std as in stack example
 
 int main() {
-    // Max-heap: tasks with higher priority numbers are processed first
-    priority_queue<pair<int, string>> urgentTasks; // pair sorts by first element by default
-
-    urgentTasks.push({5, "Emergency Fix"});
-    urgentTasks.push({3, "Regular Bug Report"});
-    urgentTasks.push({10, "Critical System Alert"});
-    urgentTasks.push({1, "Minor UI Tweak"});
+    std::queue<std::string> tasks;
     
-    cout << "Processing urgent tasks (highest priority first):\n";
-    while (!urgentTasks.empty()) {
-        pair<int, string> currentTask = urgentTasks.top();
-        urgentTasks.pop();
-        cout << "Priority: " << currentTask.first << ", Task: " << currentTask.second << endl;
+    // Adding tasks
+    tasks.push("Task 1");
+    tasks.push("Task 2");
+    tasks.push("Task 3");
+    
+    std::cout << "Processing tasks (FIFO order):
+";
+    while (!tasks.empty()) {
+        std::cout << "Processing: " << tasks.front() << std::endl;
+        tasks.pop();
     }
-
-    cout << "\n";
-
-    // Min-heap: tasks with lower priority numbers are processed first
-    priority_queue<int, vector<int>, greater<int>> processOrder; // Used for min-heap
-
-    processOrder.push(3);
-    processOrder.push(1);
-    processOrder.push(5);
-    processOrder.push(2);
-
-    cout << "Processing numbers (smallest first):\n";
-    while(!processOrder.empty()){
-        cout << processOrder.top() << " ";
-        processOrder.pop();
-    }
-    cout << endl; // Output: 1 2 3 5
-
+    
     return 0;
 }
 ```
 
 ## Iteration Patterns
 
-> ⚠️ **Important:** Priority queues, like `std::stack` and `std::queue`, are container adapters and do not expose iterators to their underlying elements. Elements can only be accessed via `top()` and removed via `pop()`. Iterating through a priority queue is inherently destructive.
+> ⚠️ **Important:** Queues, like stacks, do not support iterators. The only way to access all elements is by popping them.
 
 ### Destructive Iteration
-
 ```cpp
-// WARNING: This destroys the original priority queue
-#include <iostream>
-#include <queue>
-
-void destructiveIteratePQ(std::priority_queue<int> pq) { // Pass by value for a copy
-    std::cout << "Priority Queue elements (top to bottom, destructive): ";
-    while (!pq.empty()) {
-        std::cout << pq.top() << " "; // Access top element
-        pq.pop();                     // Remove top element
-    }
-    std::cout << "\n";
+// WARNING: This destroys the original queue
+while(!q.empty()) {
+    std::cout << q.front() << " "; // Access front element
+    q.pop();                       // Remove front element
 }
+// Output: 10 20 30 (FIFO order)
+// Queue is now empty!
+```
 
-int main() {
-    std::priority_queue<int> myPQ;
-    myPQ.push(10); myPQ.push(30); myPQ.push(20);
-    destructiveIteratePQ(myPQ); // Output: 30 20 10 (for max-heap)
-    // myPQ is still {10,30,20} if passed by value, but empty if passed by reference.
-    return 0;
+### Non-Destructive Iteration
+```cpp
+// Safe method: Copy queue first
+std::queue<int> temp = q;            // Create copy
+while(!temp.empty()) {
+    std::cout << temp.front() << " "; // Access front of copy
+    temp.pop();                      // Remove from copy only
+}
+// Original queue remains unchanged
+```
+
+## Common Use Cases
+
+### Breadth-First Search (BFS)
+```cpp
+void bfs(const std::vector<std::vector<int>>& graph, int start) {
+    std::vector<bool> visited(graph.size(), false);
+    std::queue<int> q;
+    
+    q.push(start);
+    visited[start] = true;
+    
+    while(!q.empty()) {
+        int current = q.front();
+        q.pop();
+        
+        std::cout << current << " ";
+        
+        for(int neighbor : graph[current]) {
+            if(!visited[neighbor]) {
+                visited[neighbor] = true;
+                q.push(neighbor);
+            }
+        }
+    }
 }
 ```
 
-### Non-Destructive Iteration (via Copy)
-
+### Resource Sharing / Task Scheduling
 ```cpp
-// Safe method: Copy priority queue first
-#include <iostream>
-#include <queue>
+// Simulate a printer queue
+std::queue<std::string> printer_jobs;
+printer_jobs.push("DocumentA.pdf");
+printer_jobs.push("ImageB.png");
+printer_jobs.push("ReportC.docx");
 
-void nonDestructiveIteratePQ(std::priority_queue<int> original_pq) { // Pass by value to get a copy
-    std::priority_queue<int> temp_pq = original_pq; // Explicitly copy if original_pq was passed by reference
-    
-    std::cout << "Priority Queue elements (top to bottom, non-destructive): ";
-    while(!temp_pq.empty()) {
-        std::cout << temp_pq.top() << " "; // Access top of copy
-        temp_pq.pop();                      // Remove from copy only
-    }
-    std::cout << "\n";
-    // Original priority queue remains unchanged
-}
-
-int main() {
-    std::priority_queue<int> myPQ;
-    myPQ.push(10); myPQ.push(30); myPQ.push(20);
-    nonDestructiveIteratePQ(myPQ); // Output: 30 20 10
-    std::cout << "Original PQ size after non-destructive iteration: " << myPQ.size() << "\n"; // Still 3
-    return 0;
+// Process jobs in the order they were received
+while(!printer_jobs.empty()) {
+    std::cout << "Printing: " << printer_jobs.front() << std::endl;
+    printer_jobs.pop();
 }
 ```
 
 ## Performance Characteristics
 
-| Underlying Container | Push (`O(log N)`) | Pop (`O(log N)`) | Top (`O(1)`) | Memory Efficiency | Notes |
-|----------------------|--------------------|-------------------|----------------|-------------------|-------|
-| `std::vector` (Default) | ✅ Fast heap ops | ✅ Fast heap ops | ✅ Direct access | Compact | Optimal choice for heap-based operations. |
-
-**Note**: `std::priority_queue` is designed to work with containers that provide random access iterators and `push_back`/`pop_back` operations, making `std::vector` the natural and default underlying container. Its internal implementation relies on `std::make_heap`, `std::push_heap`, and `std::pop_heap` algorithms.
+| Underlying Container | Push/Pop | Memory | Use Case |
+|-----------|----------|--------|----------|
+| `deque` (default) | O(1) | Moderate | General purpose, good balance |
+| `list` | O(1) | Higher overhead | Guaranteed O(1), better for very large elements |
 
 ## Error Handling
 
 ### Basic Error Checking
-
 ```cpp
-#include <iostream>
-#include <queue>
-
-template<typename T, typename Container, typename Compare>
-bool safeTop(std::priority_queue<T, Container, Compare>& pq, T& result) {
-    if (pq.empty()) {
-        std::cout << "Error: Priority Queue is empty. Cannot access top.\n";
+template<typename T>
+bool safeFront(std::queue<T>& q, T& result) {
+    if(q.empty()) {
         return false;
     }
-    result = pq.top();
+    result = q.front();
     return true;
 }
 
-template<typename T, typename Container, typename Compare>
-bool safePop(std::priority_queue<T, Container, Compare>& pq) {
-    if (pq.empty()) {
-        std::cout << "Error: Priority Queue is empty. Cannot pop.\n";
+template<typename T>
+bool safePop(std::queue<T>& q) {
+    if(q.empty()) {
         return false;
     }
-    pq.pop();
+    q.pop();
     return true;
 }
-
-// Example usage
-/*
-int main() {
-    std::priority_queue<int> myPQ;
-    myPQ.push(10);
-    int value;
-    if (safeTop(myPQ, value)) {
-        std::cout << "Top: " << value << "\n";
-    }
-    safePop(myPQ);
-    safePop(myPQ); // This will show an error message
-    return 0;
-}
-*/
 ```
 
-### Safe Priority Queue Wrapper
-
+### Safe Queue Wrapper
 ```cpp
-#include <stdexcept> // Required for std::runtime_error
-#include <queue>
-#include <vector>
-#include <functional> // For std::less (default comparator)
+#include <stdexcept>
 
-template<typename T, typename Container = std::vector<T>, typename Compare = std::less<T>>
-class SafePriorityQueue {
+template<typename T>
+class SafeQueue {
 private:
-    std::priority_queue<T, Container, Compare> pq;
+    std::queue<T> q;
     
 public:
     void push(const T& value) {
-        pq.push(value);
+        q.push(value);
     }
     
     T pop() {
-        if (pq.empty()) {
-            throw std::runtime_error("Priority Queue is empty - cannot pop");
+        if(q.empty()) {
+            throw std::runtime_error("Queue is empty - cannot pop");
         }
-        T value = pq.top();
-        pq.pop();
+        T value = q.front();
+        q.pop();
         return value;
     }
     
-    const T& top() const {
-        if (pq.empty()) {
-            throw std::runtime_error("Priority Queue is empty - no top element");
+    const T& front() const {
+        if(q.empty()) {
+            throw std::runtime_error("Queue is empty - no front element");
         }
-        return pq.top();
+        return q.front();
     }
     
-    bool empty() const { return pq.empty(); }
-    size_t size() const { return pq.size(); }
+    bool empty() const { return q.empty(); }
+    size_t size() const { return q.size(); }
 };
-
-// Example usage
-/*
-int main() {
-    SafePriorityQueue<int> mySafePQ; // Max-heap
-    mySafePQ.push(10);
-    std::cout << mySafePQ.top() << "\n";
-    mySafePQ.pop();
-    try {
-        mySafePQ.pop(); // Throws an exception
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Caught exception: " << e.what() << "\n";
-    }
-    
-    SafePriorityQueue<int, std::vector<int>, std::greater<int>> mySafeMinPQ; // Min-heap
-    mySafeMinPQ.push(5);
-    mySafeMinPQ.push(2);
-    std::cout << "Min-PQ top: " << mySafeMinPQ.top() << "\n"; // Output: 2
-    return 0;
-}
-*/
 ```
 
 ## Best Practices
 
 ### ✅ Do:
-
-  - Always check `empty()` before calling `top()` or `pop()` to avoid undefined behavior.
-  - Choose the correct comparator (`std::less<T>` for max-heap, `std::greater<T>` for min-heap) or write a custom one for complex types.
-  - Understand the `O(log N)` complexity for `push` and `pop` operations.
-  - Use `std::priority_queue` when you need efficient access to the highest (or lowest) priority element and don't need full sorting or random access.
-  - For custom types, ensure your comparator (or `operator<` if using default) is correctly defined.
+- Always check `empty()` before calling `front()`, `back()`, or `pop()`.
+- Use `std::queue` for problems that naturally follow a FIFO pattern.
+- Choose the underlying container (`deque` or `list`) based on performance needs.
 
 ### ❌ Don't:
+- Call `front()`, `back()`, or `pop()` on an empty queue (undefined behavior).
+- Assume queues are directly iterable.
+- Use a queue when you need random access or LIFO behavior.
 
-  - Call `top()` or `pop()` on an empty priority queue.
-  - Assume priority queues are directly iterable; they are not.
-  - Expect `std::priority_queue` to keep all elements sorted in a linear fashion; it only guarantees the `top` element is the highest priority.
-  - Use `std::priority_queue` when you need fast random access to elements or need to remove elements other than the highest priority one.
+---
 
-### Code Style Guidelines
-
-```cpp
-// Good: Clear variable names
-std::priority_queue<std::pair<int, std::string>> eventQueue; // Pair {priority, data}
-std::priority_queue<int, std::vector<int>, std::greater<int>> smallestNumbers;
-
-// Good: Check before operations
-if (!eventQueue.empty()) {
-    auto topEvent = eventQueue.top();
-    eventQueue.pop();
-}
-
-// Good: Define clear custom comparators for complex types
-struct CustomType { int value; };
-struct CustomTypeComparator {
-    bool operator()(const CustomType& a, const CustomType& b) {
-        return a.value < b.value; // For max-heap based on value
-    }
-};
-std::priority_queue<CustomType, std::vector<CustomType>, CustomTypeComparator> myCustomPQ;
-
-// Bad: No error checking
-// int topVal = myPQ.top(); // Could crash if empty
-// myPQ.pop();
-```
-
-## Key Concepts Summary
-
-**Highest Priority First Principle:** The element with the highest priority is always at the top (accessible via `top()`). By default, for primitive types, "highest priority" means the largest value (max-heap).
-
-```cpp
-pq.push(10); // PQ: [10]
-pq.push(30); // PQ: [30, 10]
-pq.push(20); // PQ: [30, 10, 20] (Internal heap structure: 30 at root)
-pq.top();    // Returns 30
-pq.pop();    // Removes 30, PQ: [20, 10] (Internal heap structure: 20 at root)
-```
-
-**No Iterators:** Direct iteration is not supported. Elements can only be accessed via `top()` and removed via `pop()`, or by creating a copy and destructively iterating.
-
-**Container Adapter:** `std::priority_queue` is not a container itself but an interface built on top of other sequence containers (e.g., `std::vector` by default). It uses heap algorithms to maintain its ordering property.
-
-**Common Applications:**
-
-  - Task scheduling where tasks have priorities
-  - Event processing in simulations
-  - Efficiently finding the Kth largest/smallest elements
-  - Implementing a limited-size buffer for highest-priority items
-
-**Memory Characteristics:**
-
-  - Automatic memory management handled by the underlying container (`std::vector`).
-  - RAII (Resource Acquisition Is Initialization) compliance.
-  - Exception safety guarantees provided by the underlying container operations.
-
------
-
-**Last Updated:** August 3, 2025
-**Documentation Source:** [cppreference.com - std::priority\_queue](https://en.cppreference.com/w/cpp/container/priority_queue)
-**Documentation Source:** [C++ Standard Library Documentation](https://docs.microsoft.com/en-us/cpp/standard-library/)
-
-```
-```
+**References:**
+- [cppreference.com - std::queue](https://en.cppreference.com/w/cpp/container/queue)
+- [C++ Standard Library Documentation](https://docs.microsoft.com/en-us/cpp/standard-library/)

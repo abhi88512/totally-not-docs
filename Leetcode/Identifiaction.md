@@ -10,5 +10,6 @@
 * **Heap Patterns**:
     * **Two Keypoints**: Problems involve K and finding the Smallest or Largest elements.
     * **Which Heap min or max?**: For "K smallest" elements, use a max-heap; for "K largest" elements, use a min-heap.
+    * **Why K**: The reason for K is that these are often sorting-related questions, but using a heap reduces the complexity from O(NlogN) (for full sort) to O(NlogK) (for heap operations).
 
 
