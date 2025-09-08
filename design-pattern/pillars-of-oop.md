@@ -38,3 +38,245 @@ The four pillars of Object-Oriented Programming (OOP) are fundamental concepts t
 
 ### Summary
 The four pillars—**Abstraction**, **Encapsulation**, **Inheritance**, and **Polymorphism**—work together to make OOP modular, reusable, and flexible. Abstraction simplifies design, encapsulation ensures data security, inheritance promotes code reuse, and polymorphism enables dynamic behavior. These principles allow developers to model complex systems efficiently, as seen in examples like the `Cat` and `Animal` classes or real-world systems like cars and airplanes.
+
+Below is the **Examples** section with simple ASP.NET Core Web API (.NET 8) examples for each of the four pillars of Object-Oriented Programming (OOP), along with explanations specific to each example. You can append this directly to your existing `.md` file.
+
+```markdown
+## Examples in ASP.NET Core Web API (.NET 8)
+
+Below are simple examples demonstrating each OOP pillar using ASP.NET Core Web API in .NET 8. Each example is minimal, self-contained, and uses a university or transportation-related domain for consistency with the provided definitions.
+
+### 1. Abstraction
+**Example**: A `Car` class abstracts away complex engine details, exposing only `Start()` and `Stop()` methods for a driving API.
+
+```csharp
+// ICar.cs
+public interface ICar
+{
+    string Start();
+    string Stop();
+}
+
+// Car.cs
+public class Car : ICar
+{
+    public string Start() => "Car engine started.";
+    public string Stop() => "Car engine stopped.";
+}
+
+// CarController.cs
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class CarController : ControllerBase
+{
+    private readonly ICar _car;
+
+    public CarController(ICar car)
+    {
+        _car = car; // Dependency injection
+    }
+
+    [HttpGet("start")]
+    public IActionResult StartCar()
+    {
+        return Ok(_car.Start());
+    }
+
+    [HttpGet("stop")]
+    public IActionResult StopCar()
+    {
+        return Ok(_car.Stop());
+    }
+}
+
+// Program.cs (Dependency Injection Setup)
+builder.Services.AddSingleton<ICar, Car>();
+```
+
+**Explanation**:
+- The `ICar` interface abstracts the essential behaviors (`Start` and `Stop`) of a car, hiding complex details like engine mechanics.
+- The `Car` class implements `ICar`, providing concrete behavior while keeping the interface simple.
+- The `CarController` uses the abstracted `ICar` interface, allowing it to work with any car type (e.g., `ElectricCar`, `GasCar`) without needing internal details, demonstrating abstraction in a Web API context.
+
+### 2. Encapsulation
+**Example**: A `BankAccount` class hides its `balance` field, exposing it only through `Deposit` and `Withdraw` methods.
+
+```csharp
+// BankAccount.cs
+public class BankAccount
+{
+    private decimal _balance; // Private field to encapsulate data
+
+    public BankAccount(decimal initialBalance)
+    {
+        _balance = initialBalance;
+    }
+
+    public decimal GetBalance() => _balance; // Controlled access
+
+    public string Deposit(decimal amount)
+    {
+        if (amount > 0)
+        {
+            _balance += amount;
+            return $"Deposited {amount}. New balance: {_balance}";
+        }
+        return "Invalid deposit amount.";
+    }
+
+    public string Withdraw(decimal amount)
+    {
+        if (amount > 0 && _balance >= amount)
+        {
+            _balance -= amount;
+            return $"Withdrew {amount}. New balance: {_balance}";
+        }
+        return "Invalid withdrawal amount or insufficient funds.";
+    }
+}
+
+// BankAccountController.cs
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class BankAccountController : ControllerBase
+{
+    private readonly BankAccount _account;
+
+    public BankAccountController()
+    {
+        _account = new BankAccount(1000); // Initial balance
+    }
+
+    [HttpGet("balance")]
+    public IActionResult GetBalance()
+    {
+        return Ok(_account.GetBalance());
+    }
+
+    [HttpPost("deposit")]
+    public IActionResult Deposit([FromBody] decimal amount)
+    {
+        return Ok(_account.Deposit(amount));
+    }
+
+    [HttpPost("withdraw")]
+    public IActionResult Withdraw([FromBody] decimal amount)
+    {
+        return Ok(_account.Withdraw(amount));
+    }
+}
+```
+
+**Explanation**:
+- The `BankAccount` class encapsulates the `_balance` field by making it `private`, preventing direct access.
+- Public methods (`GetBalance`, `Deposit`, `Withdraw`) provide controlled access, ensuring data integrity (e.g., validating amounts).
+- The `BankAccountController` exposes endpoints to interact with the `BankAccount`, demonstrating encapsulation by hiding internal state while allowing safe operations.
+
+### 3. Inheritance
+**Example**: A `Dog` class inherits from an `Animal` base class, reusing and overriding its behavior.
+
+```csharp
+// Animal.cs
+public abstract class Animal
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public virtual string MakeSound() => "Some sound";
+}
+
+// Dog.cs
+public class Dog : Animal
+{
+    public override string MakeSound() => "Bark";
+}
+
+// AnimalController.cs
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AnimalController : ControllerBase
+{
+    [HttpGet("{id}")]
+    public IActionResult GetAnimalSound(int id)
+    {
+        Animal animal = new Dog { Id = id, Name = "Buddy" };
+        return Ok(animal.MakeSound());
+    }
+}
+```
+
+**Explanation**:
+- `Dog` inherits from `Animal`, reusing the `Id` and `Name` properties and overriding the `MakeSound` method to return "Bark".
+- This demonstrates an "is-a" relationship: a `Dog` is an `Animal`.
+- The `AnimalController` treats the `Dog` as an `Animal`, showcasing how inheritance allows code reuse and specialization in a Web API.
+
+### 4. Polymorphism
+**Example**: A `FlyingTransport` interface is implemented by `Airplane` and used by an `AirportService` to handle different transport types.
+
+```csharp
+// IFlyingTransport.cs
+public interface IFlyingTransport
+{
+    string Fly();
+}
+
+// Airplane.cs
+public class Airplane : IFlyingTransport
+{
+    public string Fly() => "Airplane is flying.";
+}
+
+// AirportService.cs
+public class AirportService
+{
+    private readonly IFlyingTransport _transport;
+
+    public AirportService(IFlyingTransport transport)
+    {
+        _transport = transport; // Interface-based dependency
+    }
+
+    public string Operate() => _transport.Fly();
+}
+
+// AirportController.cs
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AirportController : ControllerBase
+{
+    private readonly AirportService _airportService;
+
+    public AirportController(AirportService airportService)
+    {
+        _airportService = airportService;
+    }
+
+    [HttpGet]
+    public IActionResult OperateTransport()
+    {
+        return Ok(_airportService.Operate());
+    }
+}
+
+// Program.cs (Dependency Injection Setup)
+builder.Services.AddSingleton<IFlyingTransport, Airplane>();
+builder.Services.AddSingleton<AirportService>();
+```
+
+**Explanation**:
+- The `IFlyingTransport` interface defines a `Fly` method, implemented by `Airplane`.
+- `AirportService` uses `IFlyingTransport`, allowing it to work with any implementation (e.g., `Airplane`, `Helicopter`) without knowing the concrete type.
+- The `AirportController` calls `Operate`, which triggers the `Fly` method, demonstrating polymorphism through interface-based dynamic behavior.
+
+### Notes
+- These examples are designed to be minimal and run in a new ASP.NET Core Web API project (`dotnet new webapi -n ExampleApi`).
+- Dependency injection is used where applicable to align with ASP.NET Core best practices.
+- No external dependencies (e.g., databases) are included for simplicity.
+- For production, add error handling, logging, and data persistence as needed.
